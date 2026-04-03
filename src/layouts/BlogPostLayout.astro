@@ -1,0 +1,68 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { title, pubDate, description } = post.data;
+const formattedDate = new Date(pubDate).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={title} description={description}>
+  <article>
+    <div class="post-header">
+      <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+      <h1>{title}</h1>
+      {description && <p class="description">{description}</p>}
+    </div>
+    <div class="post-content">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-header {
+    margin-bottom: 3rem;
+  }
+
+  time {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+  }
+
+  .post-content {
+    font-size: 1.05rem;
+  }
+
+  .post-content :global(h2) {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+  }
+
+  .post-content :global(h3) {
+    font-size: 1.15rem;
+    margin-top: 2rem;
+  }
+</style>

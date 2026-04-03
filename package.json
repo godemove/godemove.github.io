@@ -13,5 +13,8 @@
   },
   "dependencies": {
     "astro": "^6.1.3"
+  },
+  "devDependencies": {
+    "@joshuasu/lxgwbright-code-web": "^2.711.0"
   }
 }

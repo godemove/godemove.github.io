@@ -1,17 +1,73 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
 
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="我的日志">
+  <ul class="post-list">
+    {posts.map(post => {
+      const date = new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      return (
+        <li class="post-item">
+          <a href={`/blog/${post.id}`} class="post-link">
+            <time>{date}</time>
+            <span class="post-title">{post.data.title}</span>
+          </a>
+          {post.data.description && <p class="post-desc">{post.data.description}</p>}
+        </li>
+      );
+    })}
+  </ul>
+</BaseLayout>
+
+<style>
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-item {
+    margin-bottom: 2.5rem;
+  }
+
+  .post-link {
+    display: flex;
+    flex-direction: column;
+    border-bottom: none;
+    margin-bottom: 0.35rem;
+  }
+
+  .post-link time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  .post-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    display: inline-block;
+    width: fit-content;
+    transition: border-color 0.2s ease;
+  }
+
+  .post-link:hover .post-title {
+    border-bottom-color: var(--text);
+  }
+
+  .post-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+</style>
