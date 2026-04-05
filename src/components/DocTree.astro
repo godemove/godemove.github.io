@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const postsByYear = new Map<number, typeof allPosts>();
+for (const p of allPosts) {
+  const year = new Date(p.data.pubDate).getFullYear();
+  if (!postsByYear.has(year)) postsByYear.set(year, []);
+  postsByYear.get(year)!.push(p);
+}
+const years = Array.from(postsByYear.keys()).sort((a, b) => b - a);
+
+const currentPath = Astro.url.pathname;
+---
+
+<div class="doc-tree">
+  <div class="sidebar-title">文章</div>
+  {years.map(year => (
+    <div class="year-group">
+      <div class="year-label">{year}</div>
+      <ul>
+        {postsByYear.get(year)!.map(p => {
+          const postUrl = `/blog/${p.id}`;
+          const isCurrent = currentPath === postUrl || currentPath === `${postUrl}/`;
+          return (
+            <li class={isCurrent ? 'current' : ''}>
+              <a href={postUrl}>{p.data.title}</a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .doc-tree {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .sidebar-title {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .year-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .year-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    margin-bottom: 0.3rem;
+  }
+
+  a {
+    color: var(--text-secondary);
+    border-bottom: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  li.current a,
+  a:hover {
+    color: var(--text);
+  }
+</style>

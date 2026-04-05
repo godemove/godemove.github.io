@@ -2,6 +2,7 @@
 title: "Hello World"
 pubDate: 2026-04-02
 description: "这是博客的第一篇文章，欢迎来到这个极简的空间。"
+tags: ["Astro", "博客"]
 ---
 
 欢迎来到我的个人博客。

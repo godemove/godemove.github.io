@@ -3,6 +3,7 @@ title: "用 Markdown 写作"
 pubDate: 2026-03-28
 description: "Markdown 是一种优雅的写作方式，让你专注于内容而非排版。"
 draft: false
+tags: ["Markdown", "写作", "工具"]
 ---
 
 对于写作者来说，最大的敌人往往不是灵感枯竭，而是**格式工具栏**。

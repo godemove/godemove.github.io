@@ -1,31 +1,62 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import PageGrid from '../components/PageGrid.astro';
+import DocTree from '../components/DocTree.astro';
+import TagCloud from '../components/TagCloud.astro';
 import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
 
 interface Props {
   post: CollectionEntry<'blog'>;
+  headings: MarkdownHeading[];
 }
 
-const { post } = Astro.props;
-const { title, pubDate, description } = post.data;
+const { post, headings } = Astro.props;
+const { title, pubDate, description, tags } = post.data;
 const formattedDate = new Date(pubDate).toLocaleDateString('zh-CN', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
+
+const tocHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
 ---
 
 <BaseLayout title={title} description={description}>
-  <article>
-    <div class="post-header">
-      <time datetime={pubDate.toISOString()}>{formattedDate}</time>
-      <h1>{title}</h1>
-      {description && <p class="description">{description}</p>}
-    </div>
-    <div class="post-content">
-      <slot />
-    </div>
-  </article>
+  <PageGrid>
+    <DocTree slot="left" />
+
+    <article>
+      <div class="post-header">
+        <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+        <h1>{title}</h1>
+        {description && <p class="description">{description}</p>}
+        {tags && tags.length > 0 && (
+          <div class="tags">
+            {tags.map(tag => (
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+            ))}
+          </div>
+        )}
+      </div>
+      <div class="post-content">
+        <slot />
+      </div>
+    </article>
+
+    {tocHeadings.length > 0 && (
+      <div slot="right" class="toc">
+        <div class="sidebar-title">目录</div>
+        <ul>
+          {tocHeadings.map(h => (
+            <li class={`toc-item depth-${h.depth}`}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </PageGrid>
 </BaseLayout>
 
 <style>
@@ -49,7 +80,29 @@ const formattedDate = new Date(pubDate).toLocaleDateString('zh-CN', {
   .description {
     font-size: 1.1rem;
     color: var(--text-secondary);
-    margin-bottom: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .tag:hover {
+    color: var(--text);
+    border-color: var(--text);
+    border-bottom-color: var(--text);
   }
 
   .post-content {
@@ -59,10 +112,53 @@ const formattedDate = new Date(pubDate).toLocaleDateString('zh-CN', {
   .post-content :global(h2) {
     font-size: 1.4rem;
     margin-top: 2.5rem;
+    scroll-margin-top: 1.5rem;
   }
 
   .post-content :global(h3) {
     font-size: 1.15rem;
     margin-top: 2rem;
+    scroll-margin-top: 1.5rem;
+  }
+
+  .toc {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .sidebar-title {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc li {
+    margin-bottom: 0.4rem;
+  }
+
+  .toc a {
+    color: var(--text-secondary);
+    border-bottom: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .toc a:hover {
+    color: var(--text);
+  }
+
+  .toc-item.depth-3 {
+    padding-left: 0.75rem;
   }
 </style>

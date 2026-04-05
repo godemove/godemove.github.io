@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageGrid from '../../components/PageGrid.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const tags = Array.from(new Set(posts.flatMap(post => post.data.tags || [])));
+
+  return tags.map(tag => ({
+    params: { tag },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const posts = allPosts
+  .filter(post => post.data.tags?.includes(tag))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title={`标签：${tag}`} description={`包含 "${tag}" 标签的文章`}>
+  <PageGrid>
+    <div class="tag-page">
+      <div class="tag-header">
+        <h1>#{tag}</h1>
+        <p class="count">共 {posts.length} 篇文章</p>
+      </div>
+
+      <ul class="post-list">
+        {posts.map(post => {
+          const date = new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+          return (
+            <li class="post-item">
+              <a href={`/blog/${post.id}`} class="post-link">
+                <time>{date}</time>
+                <span class="post-title">{post.data.title}</span>
+              </a>
+              {post.data.description && <p class="post-desc">{post.data.description}</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </PageGrid>
+</BaseLayout>
+
+<style>
+  .tag-header {
+    margin-bottom: 2.5rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .count {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-item {
+    margin-bottom: 2rem;
+  }
+
+  .post-link {
+    display: block;
+    border-bottom: none;
+    margin-bottom: 0.35rem;
+  }
+
+  .post-link time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  .post-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    display: block;
+    width: 100%;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.25rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .post-link:hover .post-title {
+    border-bottom-color: var(--text);
+  }
+
+  .post-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+---
+
+<div class="page-grid">
+  <aside class="sidebar-left">
+    <slot name="left" />
+  </aside>
+  <div class="page-main">
+    <slot />
+  </div>
+  <aside class="sidebar-right">
+    <slot name="right" />
+  </aside>
+</div>
+
+<style>
+  .page-grid {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 960px) 220px;
+    gap: 2.5rem;
+    justify-content: center;
+    align-items: start;
+  }
+
+  .page-main {
+    min-width: 0;
+  }
+
+  @media (max-width: 1479px) {
+    .page-grid {
+      grid-template-columns: 200px minmax(0, 1fr) 200px;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    .page-grid {
+      grid-template-columns: 160px minmax(0, 1fr) 160px;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .page-grid {
+      display: block;
+    }
+
+    .sidebar-left,
+    .sidebar-right {
+      display: none;
+    }
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+</style>
