@@ -34,6 +34,7 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
     <link rel="stylesheet" href="/fonts/lxgwbrightcode-400.css" />
     <link rel="stylesheet" href="/fonts/lxgwbrightcode-300-italic.css" />
     <link rel="stylesheet" href="/fonts/lxgwbrightcode-400-italic.css" />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href={new URL('rss.xml', Astro.site).toString()} />
     <title>{title}</title>
   </head>
   <body>
