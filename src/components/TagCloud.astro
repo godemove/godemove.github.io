@@ -14,85 +14,28 @@ const tags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0]
 const currentPath = Astro.url.pathname;
 ---
 
-<div class="tag-cloud">
-  <div class="sidebar-title">标签</div>
+<div class="text-sm leading-relaxed">
+  <div class="font-semibold text-xs text-text-secondary uppercase tracking-wider mb-3">标签</div>
   {tags.length > 0 ? (
-    <div class="tag-list">
+    <div class="flex flex-wrap gap-2">
       {tags.map(([tag, count]) => {
         const tagUrl = `/tags/${encodeURIComponent(tag)}`;
         const isCurrent = currentPath === tagUrl || currentPath === `${tagUrl}/`;
         return (
-          <a href={tagUrl} class:list={['tag-item', isCurrent && 'active']}>
-            <span class="tag-name">{tag}</span>
-            <span class="tag-count">{count}</span>
+          <a
+            href={tagUrl}
+            class:list={[
+              "inline-flex items-center gap-1 text-xs text-text-secondary border border-border rounded-full px-2 py-0.5 no-underline border-b-0 transition-colors hover:text-text hover:border-text",
+              isCurrent && "text-text border-text bg-border"
+            ]}
+          >
+            <span>{tag}</span>
+            <span class="text-[10px] opacity-70">{count}</span>
           </a>
         );
       })}
     </div>
   ) : (
-    <p class="empty">还没有任何标签。</p>
+    <p class="text-text-secondary text-xs italic">还没有任何标签。</p>
   )}
 </div>
-
-<style>
-  .tag-cloud {
-    font-size: 0.85rem;
-    line-height: 1.6;
-  }
-
-  .sidebar-title {
-    font-weight: 600;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-  }
-
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .tag-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 0.1rem 0.45rem;
-    border-radius: 999px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .tag-item:hover {
-    color: var(--text);
-    border-color: var(--text);
-    border-bottom-color: var(--text);
-  }
-
-  .tag-item.active {
-    color: var(--text);
-    border-color: var(--text);
-    border-bottom-color: var(--text);
-    background-color: var(--border);
-  }
-
-  .tag-count {
-    font-size: 0.7rem;
-    opacity: 0.7;
-  }
-
-  .tag-item:hover .tag-count {
-    color: var(--text);
-  }
-
-  .empty {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-style: italic;
-  }
-</style>

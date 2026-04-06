@@ -9,7 +9,7 @@ posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 <BaseLayout title="我的日志">
   <PageGrid>
-    <ul class="post-list">
+    <ul class="list-none p-0 m-0">
       {posts.map(post => {
         const date = new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
           year: 'numeric',
@@ -17,16 +17,16 @@ posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
           day: 'numeric',
         });
         return (
-          <li class="post-item">
-            <a href={`/blog/${post.id}`} class="post-link">
-              <time>{date}</time>
-              <span class="post-title">{post.data.title}</span>
+          <li class="py-6">
+            <a href={`/blog/${post.id}`} class="block border-b-0 mb-3 group">
+              <time class="block text-sm text-text-secondary mb-2">{date}</time>
+              <span class="block text-lg font-medium border-b border-border pb-1.5 mb-2 group-hover:border-text transition-colors">{post.data.title}</span>
             </a>
-            {post.data.description && <p class="post-desc">{post.data.description}</p>}
+            {post.data.description && <p class="text-sm text-text-secondary mb-3 leading-relaxed">{post.data.description}</p>}
             {post.data.tags && post.data.tags.length > 0 && (
-              <div class="tags">
+              <div class="flex flex-wrap gap-2">
                 {post.data.tags.map(tag => (
-                  <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+                  <a href={`/tags/${encodeURIComponent(tag)}`} class="text-xs text-text-secondary border border-border rounded-full px-1.5 py-0.5 no-underline border-b-0 transition-colors hover:text-text hover:border-text">{tag}</a>
                 ))}
               </div>
             )}
@@ -36,71 +36,3 @@ posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
     </ul>
   </PageGrid>
 </BaseLayout>
-
-<style>
-  .post-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .post-item {
-    margin-bottom: 2.5rem;
-  }
-
-  .post-link {
-    display: block;
-    border-bottom: none;
-    margin-bottom: 0.35rem;
-  }
-
-  .post-link time {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.25rem;
-  }
-
-  .post-title {
-    font-size: 1.15rem;
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    display: block;
-    width: 100%;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.25rem;
-    transition: border-color 0.2s ease;
-  }
-
-  .post-link:hover .post-title {
-    border-bottom-color: var(--text);
-  }
-
-  .post-desc {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin: 0 0 0.5rem;
-    line-height: 1.6;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-  }
-
-  .tag {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 0.1rem 0.4rem;
-    border-radius: 999px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .tag:hover {
-    color: var(--text);
-    border-color: var(--text);
-    border-bottom-color: var(--text);
-  }
-</style>

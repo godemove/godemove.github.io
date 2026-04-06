@@ -37,87 +37,26 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
     <title>{title}</title>
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <nav>
-          <a href="/" class="site-title">我的日志</a>
-          <div class="nav-right">
-            <div class="nav-links">
-              <a href="/">文章</a>
-              <a href="/tags">标签</a>
-              <a href="/about">关于</a>
+    <div class="max-w-[1500px] mx-auto px-6 py-12 min-h-screen flex flex-col">
+      <header class="mb-16">
+        <nav class="flex justify-between items-center">
+          <a href="/" class="font-semibold text-lg no-underline border-0">我的日志</a>
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-6">
+              <a href="/" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">文章</a>
+              <a href="/tags" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">标签</a>
+              <a href="/about" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">关于</a>
             </div>
             <ThemeToggle />
           </div>
         </nav>
       </header>
-      <main>
+      <main class="flex-1">
         <slot />
       </main>
-      <footer>
+      <footer class="mt-20 pt-8 text-sm text-text-secondary text-center">
         <p>&copy; {new Date().getFullYear()} 我的日志. 保留所有权利.</p>
       </footer>
     </div>
   </body>
 </html>
-
-<style>
-  .wrapper {
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  header {
-    margin-bottom: 4rem;
-  }
-
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .site-title {
-    font-weight: 600;
-    font-size: 1.1rem;
-    border-bottom: none;
-  }
-
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  .nav-links a {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    border-bottom: none;
-  }
-
-  .nav-links a:hover {
-    color: var(--text);
-  }
-
-  main {
-    flex: 1;
-  }
-
-  footer {
-    margin-top: 5rem;
-    padding-top: 2rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    text-align: center;
-  }
-</style>

@@ -16,6 +16,8 @@
     "astro": "^6.1.3"
   },
   "devDependencies": {
-    "@joshuasu/lxgwbright-code-web": "^2.711.0"
+    "@joshuasu/lxgwbright-code-web": "^2.711.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "tailwindcss": "^4.2.2"
   }
 }

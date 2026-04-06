@@ -2,7 +2,6 @@
 import BaseLayout from './BaseLayout.astro';
 import PageGrid from '../components/PageGrid.astro';
 import DocTree from '../components/DocTree.astro';
-import TagCloud from '../components/TagCloud.astro';
 import type { CollectionEntry } from 'astro:content';
 import type { MarkdownHeading } from 'astro';
 
@@ -27,30 +26,30 @@ const tocHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
     <DocTree slot="left" />
 
     <article>
-      <div class="post-header">
-        <time datetime={pubDate.toISOString()}>{formattedDate}</time>
-        <h1>{title}</h1>
-        {description && <p class="description">{description}</p>}
+      <div class="mb-12">
+        <time datetime={pubDate.toISOString()} class="block text-sm text-text-secondary mb-3">{formattedDate}</time>
+        <h1 class="text-3xl font-semibold mb-3">{title}</h1>
+        {description && <p class="text-lg text-text-secondary mb-3">{description}</p>}
         {tags && tags.length > 0 && (
-          <div class="tags">
+          <div class="flex flex-wrap gap-2">
             {tags.map(tag => (
-              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="text-xs text-text-secondary border border-border rounded-full px-2 py-0.5 no-underline border-b-0 transition-colors hover:text-text hover:border-text">{tag}</a>
             ))}
           </div>
         )}
       </div>
-      <div class="post-content">
+      <div class="text-base leading-relaxed">
         <slot />
       </div>
     </article>
 
     {tocHeadings.length > 0 && (
-      <div slot="right" class="toc">
-        <div class="sidebar-title">目录</div>
-        <ul>
+      <div slot="right" class="text-sm leading-relaxed">
+        <div class="font-semibold text-xs text-text-secondary uppercase tracking-wider mb-3">目录</div>
+        <ul class="list-none p-0 m-0">
           {tocHeadings.map(h => (
-            <li class={`toc-item depth-${h.depth}`}>
-              <a href={`#${h.slug}`}>{h.text}</a>
+            <li class="mb-1.5">
+              <a href={`#${h.slug}`} class:list={["block truncate no-underline border-0 text-text-secondary hover:text-text transition-colors", h.depth === 3 && "pl-3"]}>{h.text}</a>
             </li>
           ))}
         </ul>
@@ -60,105 +59,15 @@ const tocHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
 </BaseLayout>
 
 <style>
-  .post-header {
-    margin-bottom: 3rem;
-  }
-
-  time {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-  }
-
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-  }
-
-  .description {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .tag:hover {
-    color: var(--text);
-    border-color: var(--text);
-    border-bottom-color: var(--text);
-  }
-
-  .post-content {
-    font-size: 1.05rem;
-  }
-
-  .post-content :global(h2) {
+  article :global(h2) {
     font-size: 1.4rem;
     margin-top: 2.5rem;
     scroll-margin-top: 1.5rem;
   }
 
-  .post-content :global(h3) {
+  article :global(h3) {
     font-size: 1.15rem;
     margin-top: 2rem;
     scroll-margin-top: 1.5rem;
-  }
-
-  .toc {
-    font-size: 0.85rem;
-    line-height: 1.6;
-  }
-
-  .sidebar-title {
-    font-weight: 600;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-  }
-
-  .toc ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .toc li {
-    margin-bottom: 0.4rem;
-  }
-
-  .toc a {
-    color: var(--text-secondary);
-    border-bottom: none;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .toc a:hover {
-    color: var(--text);
-  }
-
-  .toc-item.depth-3 {
-    padding-left: 0.75rem;
   }
 </style>
