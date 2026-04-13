@@ -17,74 +17,22 @@ const tags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0]
 
 <BaseLayout title="标签" description="博客文章标签列表">
   <PageGrid>
-    <div class="tags-page">
-      <h1>标签</h1>
-      <p class="intro">共 {tags.length} 个标签，{posts.length} 篇文章</p>
+    <div>
+      <h1 class="text-2xl font-semibold mb-2">标签</h1>
+      <p class="text-text-secondary mb-8">共 {tags.length} 个标签，{posts.length} 篇文章</p>
 
       {tags.length > 0 ? (
-        <div class="tag-list">
+        <div class="flex flex-wrap gap-2.5">
           {tags.map(([tag, count]) => (
-            <a href={`/tags/${encodeURIComponent(tag)}`} class="tag-item">
-              <span class="tag-name">{tag}</span>
-              <span class="tag-count">{count}</span>
+            <a href={`/tags/${encodeURIComponent(tag)}`} class="inline-flex items-center gap-1 text-sm text-text-secondary border border-border rounded-full px-3 py-1 no-underline transition-colors hover:text-text hover:border-text">
+              <span>{tag}</span>
+              <span class="text-xs opacity-70">{count}</span>
             </a>
           ))}
         </div>
       ) : (
-        <p class="empty">还没有任何标签。</p>
+        <p class="text-text-secondary italic">还没有任何标签。</p>
       )}
     </div>
   </PageGrid>
 </BaseLayout>
-
-<style>
-  .tags-page h1 {
-    font-size: 1.6rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .intro {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-  }
-
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-
-  .tag-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 0.25rem 0.65rem;
-    border-radius: 999px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .tag-item:hover {
-    color: var(--text);
-    border-color: var(--text);
-    border-bottom-color: var(--text);
-  }
-
-  .tag-count {
-    font-size: 0.75rem;
-    opacity: 0.7;
-  }
-
-  .tag-item:hover .tag-count {
-    color: var(--text);
-  }
-
-  .empty {
-    color: var(--text-secondary);
-    font-style: italic;
-  }
-</style>

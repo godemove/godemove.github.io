@@ -5,18 +5,11 @@ import PageGrid from '../components/PageGrid.astro';
 
 <BaseLayout title="关于 - 我的日志" description="关于这个博客和作者">
   <PageGrid>
-    <div class="about-page">
-      <h1>关于</h1>
+    <div>
+      <h1 class="text-2xl mb-6">关于</h1>
       <p>这是一个基于 Astro 构建的极简主义个人博客。</p>
       <p>在这里，我记录关于技术、生活和思考的点滴。没有繁复的装饰，只有纯粹的表达。</p>
       <p>如果你对我的文章有任何想法，欢迎通过邮件或其他方式与我交流。</p>
     </div>
   </PageGrid>
 </BaseLayout>
-
-<style>
-  .about-page h1 {
-    font-size: 1.6rem;
-    margin-bottom: 1.5rem;
-  }
-</style>

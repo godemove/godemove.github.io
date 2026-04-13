@@ -1,60 +1,14 @@
 ---
 ---
 
-<div class="page-grid">
-  <aside class="sidebar-left">
+<div class="grid justify-center items-start gap-10 lg:grid-cols-[220px_minmax(0,960px)_220px] md:grid-cols-[200px_minmax(0,1fr)_200px] md:gap-8 sm:grid-cols-[160px_minmax(0,1fr)_160px] sm:gap-6 max-lg:block">
+  <aside class="sticky top-8 self-start max-lg:hidden">
     <slot name="left" />
   </aside>
-  <div class="page-main">
+  <div class="min-w-0">
     <slot />
   </div>
-  <aside class="sidebar-right">
+  <aside class="sticky top-8 self-start max-lg:hidden">
     <slot name="right" />
   </aside>
 </div>
-
-<style>
-  .page-grid {
-    display: grid;
-    grid-template-columns: 220px minmax(0, 960px) 220px;
-    gap: 2.5rem;
-    justify-content: center;
-    align-items: start;
-  }
-
-  .page-main {
-    min-width: 0;
-  }
-
-  @media (max-width: 1479px) {
-    .page-grid {
-      grid-template-columns: 200px minmax(0, 1fr) 200px;
-      gap: 2rem;
-    }
-  }
-
-  @media (max-width: 1199px) {
-    .page-grid {
-      grid-template-columns: 160px minmax(0, 1fr) 160px;
-      gap: 1.5rem;
-    }
-  }
-
-  @media (max-width: 1023px) {
-    .page-grid {
-      display: block;
-    }
-
-    .sidebar-left,
-    .sidebar-right {
-      display: none;
-    }
-  }
-
-  .sidebar-left,
-  .sidebar-right {
-    position: sticky;
-    top: 2rem;
-    align-self: start;
-  }
-</style>

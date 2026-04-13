@@ -15,18 +15,26 @@ const years = Array.from(postsByYear.keys()).sort((a, b) => b - a);
 const currentPath = Astro.url.pathname;
 ---
 
-<div class="doc-tree">
-  <div class="sidebar-title">文章</div>
+<div class="text-sm leading-relaxed">
+  <div class="font-semibold text-xs text-text-secondary uppercase tracking-wider mb-3">文章</div>
   {years.map(year => (
-    <div class="year-group">
-      <div class="year-label">{year}</div>
-      <ul>
+    <div class="mb-5">
+      <div class="text-xs text-text-secondary mb-1">{year}</div>
+      <ul class="list-none p-0 m-0">
         {postsByYear.get(year)!.map(p => {
           const postUrl = `/blog/${p.id}`;
           const isCurrent = currentPath === postUrl || currentPath === `${postUrl}/`;
           return (
-            <li class={isCurrent ? 'current' : ''}>
-              <a href={postUrl}>{p.data.title}</a>
+            <li class="mb-1">
+              <a
+                href={postUrl}
+                class:list={[
+                  "block truncate no-underline border-0 transition-colors",
+                  isCurrent ? "text-text" : "text-text-secondary hover:text-text"
+                ]}
+              >
+                {p.data.title}
+              </a>
             </li>
           );
         })}
@@ -34,53 +42,3 @@ const currentPath = Astro.url.pathname;
     </div>
   ))}
 </div>
-
-<style>
-  .doc-tree {
-    font-size: 0.85rem;
-    line-height: 1.6;
-  }
-
-  .sidebar-title {
-    font-weight: 600;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-  }
-
-  .year-group {
-    margin-bottom: 1.25rem;
-  }
-
-  .year-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.4rem;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  li {
-    margin-bottom: 0.3rem;
-  }
-
-  a {
-    color: var(--text-secondary);
-    border-bottom: none;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  li.current a,
-  a:hover {
-    color: var(--text);
-  }
-</style>

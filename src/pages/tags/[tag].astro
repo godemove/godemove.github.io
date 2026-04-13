@@ -22,13 +22,13 @@ const posts = allPosts
 
 <BaseLayout title={`标签：${tag}`} description={`包含 "${tag}" 标签的文章`}>
   <PageGrid>
-    <div class="tag-page">
-      <div class="tag-header">
-        <h1>#{tag}</h1>
-        <p class="count">共 {posts.length} 篇文章</p>
+    <div>
+      <div class="mb-10">
+        <h1 class="text-2xl font-semibold mb-1">#{tag}</h1>
+        <p class="text-sm text-text-secondary">共 {posts.length} 篇文章</p>
       </div>
 
-      <ul class="post-list">
+      <ul class="list-none p-0 m-0">
         {posts.map(post => {
           const date = new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
             year: 'numeric',
@@ -36,12 +36,12 @@ const posts = allPosts
             day: 'numeric',
           });
           return (
-            <li class="post-item">
-              <a href={`/blog/${post.id}`} class="post-link">
-                <time>{date}</time>
-                <span class="post-title">{post.data.title}</span>
+            <li class="mb-8">
+              <a href={`/blog/${post.id}`} class="block border-b-0 mb-1.5 group">
+                <time class="block text-sm text-text-secondary mb-1">{date}</time>
+                <span class="block text-lg font-medium border-b border-border pb-1 mb-1 group-hover:border-text transition-colors">{post.data.title}</span>
               </a>
-              {post.data.description && <p class="post-desc">{post.data.description}</p>}
+              {post.data.description && <p class="text-sm text-text-secondary leading-relaxed">{post.data.description}</p>}
             </li>
           );
         })}
@@ -49,65 +49,3 @@ const posts = allPosts
     </div>
   </PageGrid>
 </BaseLayout>
-
-<style>
-  .tag-header {
-    margin-bottom: 2.5rem;
-  }
-
-  h1 {
-    font-size: 1.6rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
-
-  .count {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin: 0;
-  }
-
-  .post-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .post-item {
-    margin-bottom: 2rem;
-  }
-
-  .post-link {
-    display: block;
-    border-bottom: none;
-    margin-bottom: 0.35rem;
-  }
-
-  .post-link time {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.25rem;
-  }
-
-  .post-title {
-    font-size: 1.1rem;
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    display: block;
-    width: 100%;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.25rem;
-    transition: border-color 0.2s ease;
-  }
-
-  .post-link:hover .post-title {
-    border-bottom-color: var(--text);
-  }
-
-  .post-desc {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: 1.6;
-  }
-</style>
