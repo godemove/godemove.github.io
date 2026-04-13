@@ -24,7 +24,7 @@ const tags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0]
       {tags.length > 0 ? (
         <div class="flex flex-wrap gap-2.5">
           {tags.map(([tag, count]) => (
-            <a href={`/tags/${encodeURIComponent(tag)}`} class="inline-flex items-center gap-1 text-sm text-text-secondary border border-border rounded-full px-3 py-1 no-underline border-b-0 transition-colors hover:text-text hover:border-text">
+            <a href={`/tags/${encodeURIComponent(tag)}`} class="inline-flex items-center gap-1 text-sm text-text-secondary border border-border rounded-full px-3 py-1 no-underline transition-colors hover:text-text hover:border-text">
               <span>{tag}</span>
               <span class="text-xs opacity-70">{count}</span>
             </a>
