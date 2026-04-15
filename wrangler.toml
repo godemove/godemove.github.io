@@ -1,0 +1,8 @@
+name = "godemove"
+compatibility_date = "2026-04-15"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cmsdb"
+database_id = "fd58869e-453a-4de2-a2c5-f869189ad03b"
