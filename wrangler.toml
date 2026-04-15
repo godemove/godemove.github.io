@@ -1,0 +1,14 @@
+name = "kimi-cli-blog"
+pages_build_output_dir = "dist" # 你的构建输出目录，例如 dist, build, .next 等
+
+# Workaround for @astrojs/cloudflare#16107: wrangler 4.77+ rejects the
+# default "ASSETS" binding name in Pages projects. Using a custom name here
+# prevents the adapter from injecting the reserved "ASSETS" binding into the
+# generated wrangler.json. Cloudflare Pages still provides env.ASSETS at runtime.
+[assets]
+binding = "MY_ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cmsdb"
+database_id = "fd58869e-453a-4de2-a2c5-f869189ad03b"

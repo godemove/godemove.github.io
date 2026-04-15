@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import PageGrid from '../components/PageGrid.astro';
 import DocTree from '../components/DocTree.astro';
+import Comments from '../components/Comments.astro';
 import type { CollectionEntry } from 'astro:content';
 import type { MarkdownHeading } from 'astro';
 
@@ -38,24 +39,81 @@ const tocHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
           </div>
         )}
       </div>
-      <div class="text-base leading-relaxed">
+      <div class="text-base leading-relaxed post-body">
         <slot />
       </div>
+      <Comments postId={post.id} />
     </article>
 
     {tocHeadings.length > 0 && (
       <div slot="right" class="text-sm leading-relaxed">
         <div class="font-semibold text-xs text-text-secondary uppercase tracking-wider mb-3">目录</div>
-        <ul class="list-none p-0 m-0">
+        <ul class="list-none p-0 m-0" id="toc">
           {tocHeadings.map(h => (
-            <li class="mb-1.5">
-              <a href={`#${h.slug}`} class:list={["block truncate no-underline border-0 text-text-secondary hover:text-text transition-colors", h.depth === 3 && "pl-3"]}>{h.text}</a>
+            <li class="toc-item mb-2" data-heading-id={h.slug}>
+              <a
+                href={`#${h.slug}`}
+                class:list={[
+                  "toc-link flex items-center gap-2 truncate no-underline border-0 text-text-secondary hover:text-text transition-colors",
+                  h.depth === 3 && "pl-4"
+                ]}
+              >
+                <span class="toc-dot w-1.5 h-1.5 rounded-full bg-border flex-shrink-0 transition-colors"></span>
+                <span class="truncate">{h.text}</span>
+              </a>
             </li>
           ))}
         </ul>
       </div>
     )}
   </PageGrid>
+
+  <script is:inline>
+    (function() {
+      const tocLinks = document.querySelectorAll('.toc-link');
+      const tocItems = document.querySelectorAll('.toc-item');
+      if (!tocLinks.length) return;
+
+      const headingMap = new Map();
+      tocItems.forEach(item => {
+        const id = item.getAttribute('data-heading-id');
+        if (id) {
+          const heading = document.getElementById(id);
+          if (heading) headingMap.set(id, { item, heading });
+        }
+      });
+
+      function updateActive() {
+        const scrollPos = window.scrollY + 100;
+        let activeId = null;
+
+        headingMap.forEach(({ heading }, id) => {
+          if (heading.offsetTop <= scrollPos) {
+            activeId = id;
+          }
+        });
+
+        tocItems.forEach(item => {
+          const dot = item.querySelector('.toc-dot');
+          const link = item.querySelector('.toc-link');
+          if (item.getAttribute('data-heading-id') === activeId) {
+            dot?.classList.remove('bg-border');
+            dot?.classList.add('bg-text');
+            link?.classList.remove('text-text-secondary');
+            link?.classList.add('text-text');
+          } else {
+            dot?.classList.add('bg-border');
+            dot?.classList.remove('bg-text');
+            link?.classList.add('text-text-secondary');
+            link?.classList.remove('text-text');
+          }
+        });
+      }
+
+      updateActive();
+      window.addEventListener('scroll', updateActive, { passive: true });
+    })();
+  </script>
 </BaseLayout>
 
 <style>

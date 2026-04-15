@@ -8,12 +8,13 @@
 
 | 层级 | 技术 |
 |------|------|
-| 框架 | **Astro 6.x**（静态站点生成，输出 `dist/`） |
-| 包管理器 | **Bun 1.3.x**（`bun install`、`bun run dev`） |
-| 样式 | **原生 CSS**，无 Tailwind / 无 UI 框架 |
+| 框架 | **Astro 6.x**（混合输出 `hybrid`，输出 `dist/`） |
+| 包管理器 | **Bun 1.3.x**（`bun install`、`bun run build`） |
+| 样式 | **Tailwind CSS 4.x**（Vite 插件方式接入） |
 | 字体 | **LXGW Bright Code**（本地托管于 `public/fonts/`） |
 | 内容 | Markdown + Astro Content Collections（`src/content/blog/`） |
-| 部署 | **GitHub Pages** via GitHub Actions（`.github/workflows/deploy.yml`） |
+| 部署 | **Cloudflare Pages** via GitHub Actions（`.github/workflows/deploy.yml`） |
+| 数据库 | **Cloudflare D1**（`cmsdb`）+ Drizzle ORM |
 | 运行时 | Node 22（CI 构建要求），Bun 仅做包管理 |
 
 ---
@@ -28,13 +29,18 @@
 │   │   ├── PageGrid.astro     # 三栏布局容器
 │   │   ├── DocTree.astro      # 左侧文章树
 │   │   ├── TagCloud.astro     # 右侧标签云
-│   │   └── ThemeToggle.astro  # 主题切换按钮
+│   │   ├── ThemeToggle.astro  # 主题切换按钮
+│   │   └── Comments.astro     # 评论组件（D1）
+│   ├── db/
+│   │   └── schema.ts          # Drizzle 表定义
 │   ├── layouts/
 │   │   ├── BaseLayout.astro   # 基础布局（导航、页脚、字体）
-│   │   └── BlogPostLayout.astro  # 文章页布局（含目录 TOC）
+│   │   └── BlogPostLayout.astro  # 文章页布局（含目录 TOC + 评论）
 │   ├── pages/
 │   │   ├── index.astro        # 首页（文章列表）
 │   │   ├── about.astro        # 关于页
+│   │   ├── api/
+│   │   │   └── comments.ts    # 评论 API（GET / POST）
 │   │   ├── blog/
 │   │   │   ├── [...slug].astro   # 文章详情路由
 │   │   │   └── index.astro       # 重定向到 /
@@ -44,7 +50,9 @@
 │   ├── styles/global.css      # 全局样式 + CSS 变量
 │   └── content.config.ts      # 内容集合 schema
 ├── public/fonts/              # LXGW Bright Code 字体文件
-├── .github/workflows/deploy.yml  # CI/CD
+├── .github/workflows/deploy.yml  # CI/CD（Cloudflare Pages）
+├── wrangler.toml              # Cloudflare D1 绑定配置
+├── schema.sql                 # D1 comments 表结构
 └── astro.config.mjs
 ```
 
@@ -102,14 +110,20 @@ draft: false
 # 安装依赖
 bun install
 
-# 本地开发
+# 本地开发（静态页面预览）
 bun run dev
+
+# 本地开发（带 D1 绑定，推荐用于测试评论功能）
+wrangler pages dev --d1=DB
 
 # 构建（输出到 dist/）
 bun run build
 
 # 预览构建结果
 bun run preview
+
+# D1 本地 SQL 执行
+wrangler d1 execute cmsdb --local --file=./schema.sql
 ```
 
 ---
@@ -132,33 +146,37 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 
 ### 6.4 RSS 站点地址
 `astro.config.mjs` 中设置了 `site: 'https://example.com'` 作为本地开发占位符。
-**部署前请将其替换为你的实际域名**（如 `https://yourname.github.io` 或自定义域名）。
-GitHub Actions 构建时会通过 `--site` 参数自动覆盖该值，因此 CI 部署的 RSS 链接是正确的。
+**部署前请将其替换为你的实际域名**。
+
+### 6.5 混合渲染（Hybrid Output）
+- `astro.config.mjs` 已启用 `output: 'hybrid'` + Cloudflare adapter
+- 所有静态页面显式导出 `export const prerender = true`
+- 只有 `/api/comments` 为服务端渲染（`prerender = false`）
+- 在 `wrangler pages dev --d1=DB` 环境下运行时，API 路由通过 `import { env } from 'cloudflare:workers'` 访问 D1（`env.DB`）
 
 ---
 
 ## 7. 部署
 
-- 推送到 `main` 分支即触发 GitHub Actions 自动构建并部署
-- 仓库设置 → Pages → Source 选择 **GitHub Actions**
-- 支持自动识别仓库类型：
-  - 用户站点 `username.github.io` → 根路径 `/`
-  - 项目站点 → 子路径 `/repo-name/`
+- 推送到 `main` 分支即触发 GitHub Actions 自动构建并部署到 **Cloudflare Pages**
+- 需要在仓库 Settings → Secrets and variables → Actions 中配置：
+  - `CLOUDFLARE_API_TOKEN` — Cloudflare API Token（需包含 Cloudflare Pages 编辑权限）
+  - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare 账户 ID
+- `wrangler.toml` 中已绑定 D1 数据库 `cmsdb`，Cloudflare Pages 构建时自动解析
 
 ---
 
-## 8. 未来规划（供参考）
+## 8. 功能状态
 
-- **评论系统**：计划使用第三方（如 Giscus）或 Cloudflare D1 + Astro Islands
-- **搜索**：可考虑 Pagefind 或 Fuse.js
-- **评论系统**：计划使用第三方（如 Giscus）或 Cloudflare D1 + Astro Islands
+- ✅ **评论系统**：基于 Cloudflare D1 + Drizzle ORM + 原生 JS，支持文章页显示与提交评论
+- ⏳ **搜索**：可考虑 Pagefind 或 Fuse.js
 
 ---
 
 ## 9. 修改守则
 
 1. **保持极简**：不要引入重型 UI 框架（Shadcn/ui、Bootstrap 等）
-2. **优先原生 CSS**：样式改动在组件 `<style>` 或 `global.css` 中完成
+2. **样式一致性**：Tailwind 优先，必要时在组件 `<style>` 中补充
 3. **最小变更**：只改与需求直接相关的文件
 4. **测试构建**：每次修改后运行 `bun run build`，确保 0 报错
 5. **更新本文档**：如果改了架构、依赖或部署流程，同步更新 `AGENT.md`

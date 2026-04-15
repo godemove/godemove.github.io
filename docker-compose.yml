@@ -1,0 +1,9 @@
+services:
+  blog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kimi-cli-blog
+    ports:
+      - "4321:80"
+    restart: unless-stopped

@@ -1,0 +1,156 @@
+---
+interface Props {
+  postId: string;
+}
+
+const { postId } = Astro.props;
+---
+
+<div class="comments-section mt-16 pt-8 border-t border-border" data-post-id={postId}>
+  <h2 class="text-xl font-semibold mb-6">评论</h2>
+
+  <div class="comments-list space-y-6 mb-8">
+    <p class="text-text-secondary text-sm comments-loading">加载评论中...</p>
+  </div>
+
+  <form class="comments-form space-y-4">
+    <div>
+      <label class="block text-sm text-text-secondary mb-1">昵称</label>
+      <input
+        type="text"
+        name="author"
+        maxlength="32"
+        required
+        class="comments-author w-full max-w-xs px-3 py-2 bg-transparent border border-border rounded text-sm focus:outline-none focus:border-text transition-colors"
+      />
+    </div>
+    <div>
+      <label class="block text-sm text-text-secondary mb-1">评论内容</label>
+      <textarea
+        name="content"
+        rows="4"
+        maxlength="2000"
+        required
+        class="comments-content w-full px-3 py-2 bg-transparent border border-border rounded text-sm focus:outline-none focus:border-text transition-colors resize-y"
+      ></textarea>
+    </div>
+    <div class="flex items-center gap-4">
+      <button
+        type="submit"
+        class="comments-submit px-4 py-2 text-sm border border-border rounded hover:border-text hover:text-text transition-colors"
+      >
+        提交评论
+      </button>
+      <span class="comments-status text-sm text-text-secondary"></span>
+    </div>
+  </form>
+</div>
+
+<script is:inline>
+  (function() {
+    window.__commentsRegistry = window.__commentsRegistry || new WeakSet();
+
+    function initComments(container) {
+      if (!container || window.__commentsRegistry.has(container)) return;
+      window.__commentsRegistry.add(container);
+
+      const postId = container.getAttribute('data-post-id');
+      const listEl = container.querySelector('.comments-list');
+      const form = container.querySelector('.comments-form');
+      const statusEl = container.querySelector('.comments-status');
+      const submitBtn = container.querySelector('.comments-submit');
+      if (!listEl || !form || !statusEl || !submitBtn) return;
+
+      let loading = false;
+
+      function formatDate(ts) {
+        const d = new Date(ts);
+        return d.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function renderComments(comments) {
+        if (!comments.length) {
+          listEl.innerHTML = '<p class="text-text-secondary text-sm">暂无评论，来抢沙发吧！</p>';
+          return;
+        }
+
+        listEl.innerHTML = comments.map(function(c) {
+          return '<div class="comment-item">' +
+            '<div class="flex items-center gap-3 mb-1">' +
+              '<span class="font-medium text-sm">' + escapeHtml(c.author) + '</span>' +
+              '<time class="text-xs text-text-secondary">' + formatDate(c.createdAt) + '</time>' +
+            '</div>' +
+            '<p class="text-sm leading-relaxed whitespace-pre-wrap">' + escapeHtml(c.content) + '</p>' +
+          '</div>';
+        }).join('');
+      }
+
+      async function loadComments() {
+        if (loading) return;
+        loading = true;
+        try {
+          const res = await fetch('/api/comments?postId=' + encodeURIComponent(postId || ''));
+          if (!res.ok) throw new Error('Failed to load comments');
+          const data = await res.json();
+          renderComments(data);
+        } catch (err) {
+          listEl.innerHTML = '<p class="text-text-secondary text-sm">评论加载失败，请刷新重试。</p>';
+        } finally {
+          loading = false;
+        }
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        statusEl.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中...';
+
+        const author = form.querySelector('.comments-author').value.trim();
+        const content = form.querySelector('.comments-content').value.trim();
+
+        try {
+          const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postId: postId, author: author, content: content }),
+          });
+
+          const result = await res.json().catch(function() { return {}; });
+          if (!res.ok) {
+            throw new Error(result.error || '提交失败');
+          }
+
+          form.reset();
+          statusEl.textContent = '评论已发布';
+          await loadComments();
+        } catch (err) {
+          statusEl.textContent = err.message || '提交失败，请重试';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '提交评论';
+        }
+      });
+
+      loadComments();
+    }
+
+    // 初始化页面上所有尚未初始化的评论区域
+    document.querySelectorAll('.comments-section').forEach(initComments);
+  })();
+</script>
