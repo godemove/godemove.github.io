@@ -28,14 +28,10 @@ jobs:
       - name: Build with Astro
         run: bun run build
 
-      - name: Prepare wrangler.toml for deploy
-        run: |
-          echo 'main = "dist/server/entry.mjs"' >> wrangler.toml
-          rm -f dist/server/wrangler.json
-          rm -rf .wrangler/deploy
-
+      # 使用官方 Action 进行部署，更加规范和稳定
       - name: Deploy to Cloudflare Workers
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # 默认会执行 wrangler deploy
