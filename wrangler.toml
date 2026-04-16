@@ -2,6 +2,11 @@ name = "godemove"
 compatibility_date = "2026-04-15"
 compatibility_flags = ["nodejs_compat"]
 
+[[kv_namespaces]]
+binding = "godemove-session"
+id = "dad0fd95cd8348439c282a0d8db88847"
+preview_id = "dad0fd95cd8348439c282a0d8db88847"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "cmsdb"
