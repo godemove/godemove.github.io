@@ -14,6 +14,11 @@ const { postId } = Astro.props;
   </div>
 
   <form class="comments-form space-y-4">
+    <!-- honeypot field: hidden from humans, visible to bots -->
+    <div class="hidden" style="display:none !important;" aria-hidden="true">
+      <label>Do not fill this field</label>
+      <input type="text" name="website" class="comments-website" tabindex="-1" autocomplete="off" />
+    </div>
     <div>
       <label class="block text-sm text-text-secondary mb-1">昵称</label>
       <input
@@ -123,12 +128,13 @@ const { postId } = Astro.props;
 
         const author = form.querySelector('.comments-author').value.trim();
         const content = form.querySelector('.comments-content').value.trim();
+        const website = form.querySelector('.comments-website').value.trim();
 
         try {
           const res = await fetch('/api/comments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ postId: postId, author: author, content: content }),
+            body: JSON.stringify({ postId: postId, author: author, content: content, website: website }),
           });
 
           const result = await res.json().catch(function() { return {}; });

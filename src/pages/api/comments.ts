@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { drizzle } from 'drizzle-orm/d1';
-import { comments } from '../../db/schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { comments, commentRateLimits } from '../../db/schema';
+import { eq, desc, sql, and, gt } from 'drizzle-orm';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -41,11 +41,16 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Database not available' }), { status: 500 });
   }
 
-  let body: { postId?: string; author?: string; content?: string; parentId?: number | null };
+  let body: { postId?: string; author?: string; content?: string; website?: string; parentId?: number | null };
   try {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+
+  // Honeypot: if hidden field is filled, reject as spam
+  if (body.website && body.website.trim().length > 0) {
+    return new Response(JSON.stringify({ error: 'Spam detected' }), { status: 400 });
   }
 
   const { postId, author, content, parentId } = body;
@@ -62,7 +67,24 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Content must be 1-2000 characters' }), { status: 400 });
   }
 
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+
   try {
+    // Rate limiting: 1 comment per IP per 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recent = await db
+      .select()
+      .from(commentRateLimits)
+      .where(and(
+        eq(commentRateLimits.ip, ip),
+        gt(commentRateLimits.lastPostAt, fiveMinutesAgo)
+      ))
+      .get();
+
+    if (recent) {
+      return new Response(JSON.stringify({ error: '评论太频繁，请 5 分钟后再试' }), { status: 429 });
+    }
+
     await db.insert(comments).values({
       postId,
       author: trimmedAuthor,
@@ -70,6 +92,13 @@ export const POST: APIRoute = async ({ request }) => {
       parentId: parentId ?? null,
       createdAt: new Date(),
     });
+
+    await db.insert(commentRateLimits)
+      .values({ ip, lastPostAt: new Date() })
+      .onConflictDoUpdate({
+        target: commentRateLimits.ip,
+        set: { lastPostAt: new Date() },
+      });
 
     const [result] = await db
       .select()
