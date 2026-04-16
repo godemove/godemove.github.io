@@ -1,6 +1,7 @@
 # AGENT.md — 个人博客项目
 
 > 本文件面向 AI 编码助手。在修改代码前请先阅读本文档。
+> **当前版本：v1.0.0**
 
 ---
 
@@ -8,12 +9,12 @@
 
 | 层级 | 技术 |
 |------|------|
-| 框架 | **Astro 6.x**（混合输出 `hybrid`，输出 `dist/`） |
+| 框架 | **Astro 6.x**（静态 + SSR API，输出 `dist/`） |
 | 包管理器 | **Bun 1.3.x**（`bun install`、`bun run build`） |
 | 样式 | **Tailwind CSS 4.x**（Vite 插件方式接入） |
 | 字体 | **LXGW Bright Code**（本地托管于 `public/fonts/`） |
 | 内容 | Markdown + Astro Content Collections（`src/content/blog/`） |
-| 部署 | **Cloudflare Pages** via GitHub Actions（`.github/workflows/deploy.yml`） |
+| 部署 | **Cloudflare Workers** via GitHub Actions（`.github/workflows/deploy.yml`） |
 | 数据库 | **Cloudflare D1**（`cmsdb`）+ Drizzle ORM |
 | 运行时 | Node 22（CI 构建要求），Bun 仅做包管理 |
 
@@ -28,11 +29,10 @@
 │   ├── components/            # 可复用组件
 │   │   ├── PageGrid.astro     # 三栏布局容器
 │   │   ├── DocTree.astro      # 左侧文章树
-│   │   ├── TagCloud.astro     # 右侧标签云
 │   │   ├── ThemeToggle.astro  # 主题切换按钮
-│   │   └── Comments.astro     # 评论组件（D1）
+│   │   └── Comments.astro     # 评论组件（D1 + 原生 JS）
 │   ├── db/
-│   │   └── schema.ts          # Drizzle 表定义
+│   │   └── schema.ts          # Drizzle 表定义（comments, commentRateLimits）
 │   ├── layouts/
 │   │   ├── BaseLayout.astro   # 基础布局（导航、页脚、字体）
 │   │   └── BlogPostLayout.astro  # 文章页布局（含目录 TOC + 评论）
@@ -50,9 +50,11 @@
 │   ├── styles/global.css      # 全局样式 + CSS 变量
 │   └── content.config.ts      # 内容集合 schema
 ├── public/fonts/              # LXGW Bright Code 字体文件
-├── .github/workflows/deploy.yml  # CI/CD（Cloudflare Pages）
-├── wrangler.toml              # Cloudflare D1 绑定配置
-├── schema.sql                 # D1 comments 表结构
+├── .github/workflows/deploy.yml  # CI/CD（Cloudflare Workers）
+├── wrangler.toml              # Cloudflare Workers / D1 / KV 绑定配置
+├── schema.sql                 # D1 初始化 SQL（comments + comment_rate_limits）
+├── Dockerfile                 # 生产构建镜像
+├── docker-compose.yml         # 本地 Docker 编排
 └── astro.config.mjs
 ```
 
@@ -113,16 +115,13 @@ bun install
 # 本地开发（静态页面预览）
 bun run dev
 
-# 本地开发（带 D1 绑定，推荐用于测试评论功能）
-wrangler pages dev --d1=DB
-
 # 构建（输出到 dist/）
 bun run build
 
-# 预览构建结果
+# 预览构建结果（在本地 workerd 运行时中运行，含 D1/KV 绑定）
 bun run preview
 
-# D1 本地 SQL 执行
+# D1 本地 SQL 执行（仅影响本地副本，不影响远程）
 wrangler d1 execute cmsdb --local --file=./schema.sql
 ```
 
@@ -145,30 +144,52 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 字体通过 `public/fonts/` 本地托管，不要改路径。构建后会自动复制到 `dist/fonts/`。
 
 ### 6.4 RSS 站点地址
-`astro.config.mjs` 中设置了 `site: 'https://example.com'` 作为本地开发占位符。
-**部署前请将其替换为你的实际域名**。
+`astro.config.mjs` 中应配置真实的站点域名。
 
-### 6.5 混合渲染（Hybrid Output）
-- `astro.config.mjs` 已启用 `output: 'hybrid'` + Cloudflare adapter
-- 所有静态页面显式导出 `export const prerender = true`
-- 只有 `/api/comments` 为服务端渲染（`prerender = false`）
-- 在 `wrangler pages dev --d1=DB` 环境下运行时，API 路由通过 `import { env } from 'cloudflare:workers'` 访问 D1（`env.DB`）
+### 6.5 渲染模式
+- Astro 6 默认 `output: 'static'`，配合 Cloudflare adapter 后静态页面会自动预渲染
+- API 路由 `src/pages/api/comments.ts` 显式导出 `export const prerender = false`，由 Workers SSR 执行
+- 静态页面均已显式添加 `export const prerender = true`
+- API 路由通过 `import { env } from 'cloudflare:workers'` 访问 D1（`env.DB`）
+
+### 6.6 评论系统与 D1
+- 远程 D1 数据库（`cmsdb`）必须手动创建表，本地 `wrangler d1 execute --local` 不会同步到远程
+- 需要的表：
+  - `comments` — 存储评论（见 `schema.sql`）
+  - `comment_rate_limits` — 存储 IP 限流记录（部署后需手动创建）
+- 评论系统包含两层防护：
+  - **Honeypot**：隐藏的 `website` 字段，机器人填写即拒绝
+  - **IP 速率限制**：同一 IP 5 分钟内只能提交 1 条评论
 
 ---
 
 ## 7. 部署
 
-- 推送到 `main` 分支即触发 GitHub Actions 自动构建并部署到 **Cloudflare Pages**
-- 需要在仓库 Settings → Secrets and variables → Actions 中配置：
-  - `CLOUDFLARE_API_TOKEN` — Cloudflare API Token（需包含 Cloudflare Pages 编辑权限）
+- 推送到 `main` 分支即触发 GitHub Actions 自动构建并部署到 **Cloudflare Workers**
+- 需要在仓库 **Settings → Secrets and variables → Actions** 中配置：
+  - `CLOUDFLARE_API_TOKEN` — Cloudflare API Token（需包含 `Cloudflare Workers:Edit` 权限，建议同时有 `Account:Read`）
   - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare 账户 ID
-- `wrangler.toml` 中已绑定 D1 数据库 `cmsdb`，Cloudflare Pages 构建时自动解析
+- 部署流程：
+  1. `bun run build`
+  2. 向 `wrangler.toml` 追加 `main = "dist/server/entry.mjs"`
+  3. 删除 Astro 生成的 `dist/server/wrangler.json`（避免 wrangler 配置冲突）
+  4. `npx wrangler deploy`（仅读取根目录 `wrangler.toml`）
+- Workers 默认域名：`https://godemove.<account-subdomain>.workers.dev`
+- 自定义域名绑定：Dashboard → Workers & Pages → `godemove` → Settings → Triggers → Custom Domains
 
 ---
 
-## 8. 功能状态
+## 8. 功能状态（v1.0.0）
 
 - ✅ **评论系统**：基于 Cloudflare D1 + Drizzle ORM + 原生 JS，支持文章页显示与提交评论
+  - ✅ 评论列表（按时间倒序）
+  - ✅ 提交表单（昵称 ≤ 32 字，内容 ≤ 2000 字）
+  - ✅ Honeypot 反爬虫
+  - ✅ IP 速率限制（5 分钟 1 条）
+- ✅ **标签云与标签详情页**
+- ✅ **RSS 订阅**
+- ✅ **暗色 / 亮色主题切换**
+- ✅ **Docker 支持**
 - ⏳ **搜索**：可考虑 Pagefind 或 Fuse.js
 
 ---

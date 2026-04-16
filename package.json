@@ -1,7 +1,7 @@
 {
-  "name": "kimi-cli-blog",
+  "name": "brave-new-blog",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "node": ">=22.12.0"
   },
