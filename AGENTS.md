@@ -200,4 +200,62 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 2. **样式一致性**：Tailwind 优先，必要时在组件 `<style>` 中补充
 3. **最小变更**：只改与需求直接相关的文件
 4. **测试构建**：每次修改后运行 `bun run build`，确保 0 报错
-5. **更新本文档**：如果改了架构、依赖或部署流程，同步更新 `AGENT.md`
+5. **更新本文档**：如果改了架构、依赖或部署流程，同步更新 `AGENTS.md`
+6. **遵循 Conventional Commits**：所有提交必须使用规范格式，见下节
+
+---
+
+## 10. Commit Message 规范（Conventional Commits）
+
+所有提交必须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 格式，确保生成 CHANGELOG 和版本管理时语义清晰。
+
+### 格式
+
+```
+<type>(<scope>): <简短描述>
+
+<可选的详细正文>
+
+<可选的脚注>
+```
+
+- **type**：必填，表示提交类别
+- **scope**：可选，表示影响范围（如 `comments`、`api`、`deploy`、`ui`）
+- **subject**：必填，简短描述（小写开头，不加句号）
+
+### 常用 type
+
+| Type | 含义 | 示例 |
+|------|------|------|
+| `feat` | 新功能 | `feat(comments): add honeypot anti-spam` |
+| `fix` | 修复 bug | `fix(api): resolve D1 binding not found in deploy` |
+| `docs` | 文档变更 | `docs: update AGENTS.md deployment notes` |
+| `style` | 代码格式（不影响逻辑） | `style: format tailwind class order` |
+| `refactor` | 重构 | `refactor(comments): simplify fetch logic` |
+| `perf` | 性能优化 | `perf(db): add index on comments.post_id` |
+| `test` | 测试相关 | `test(api): add rate limit unit tests` |
+| `chore` | 构建/工具/依赖 | `chore(deps): bump astro to 6.2.0` |
+| `ci` | CI/CD 配置 | `ci: switch deploy action to wrangler-action` |
+
+### 特殊场景
+
+- **破坏性变更**：在 type/scope 后加 `!`，或在脚注加 `BREAKING CHANGE:`
+  ```
+  feat(api)!: remove legacy comment endpoint
+  ```
+- **关联 Issue**：在脚注使用 `Closes #123`
+  ```
+  fix(ui): prevent comment double loading
+
+  Closes #42
+  ```
+
+### 示例
+
+```bash
+git commit -m "feat(comments): add IP-based rate limiting
+
+- Add comment_rate_limits table to D1 schema
+- Enforce 5-minute cooldown per IP in POST /api/comments
+- Update AGENTS.md with security notes"
+```
