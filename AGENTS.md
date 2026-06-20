@@ -16,7 +16,7 @@
 | 内容 | Markdown + Astro Content Collections（`src/content/blog/`） |
 | 部署 | **Cloudflare Workers** via GitHub Actions（`.github/workflows/deploy.yml`） |
 | 数据库 | **Cloudflare D1**（`cmsdb`）+ Drizzle ORM |
-| 运行时 | Node 22（CI 构建要求），Bun 仅做包管理 |
+| 运行时 | Node 24（CI 构建要求），Bun 仅做包管理 |
 
 ---
 

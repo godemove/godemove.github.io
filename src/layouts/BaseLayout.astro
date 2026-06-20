@@ -38,10 +38,11 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
     <title>{title}</title>
   </head>
   <body>
-    <div class="max-w-[1500px] mx-auto px-6 py-12 min-h-screen flex flex-col">
-      <header class="mb-16">
+    <slot name="progress" />
+    <div class="max-w-[1500px] mx-auto px-6 py-10 min-h-screen flex flex-col">
+      <header class="mb-12">
         <nav class="flex justify-between items-center">
-          <a href="/" class="font-semibold text-lg no-underline border-0">我的日志</a>
+          <a href="/" class="font-medium text-base no-underline border-0 text-text-secondary hover:text-text transition-colors">我的日志</a>
           <div class="flex items-center gap-6">
             <div class="flex items-center gap-6">
               <a href="/tags" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">标签</a>
@@ -70,7 +71,7 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
 
 <style>
   .rss-link {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     border-bottom: none;
     display: flex;
     align-items: center;
@@ -80,6 +81,6 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
 
   .rss-link:hover {
     opacity: 1;
-    color: var(--text);
+    color: var(--color-text-primary);
   }
 </style>

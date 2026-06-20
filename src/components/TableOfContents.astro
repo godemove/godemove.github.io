@@ -1,0 +1,226 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const tocHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
+
+interface TocNode {
+  slug: string;
+  text: string;
+  children: TocNode[];
+}
+
+const tocTree: TocNode[] = [];
+let currentH2: TocNode | null = null;
+
+for (const h of tocHeadings) {
+  if (h.depth === 2) {
+    currentH2 = { slug: h.slug, text: h.text, children: [] };
+    tocTree.push(currentH2);
+  } else if (h.depth === 3 && currentH2) {
+    currentH2.children.push({ slug: h.slug, text: h.text, children: [] });
+  }
+}
+---
+
+<div class="toc">
+  {tocTree.length > 0 && (
+    <ul class="toc-list">
+      {tocTree.map(node => (
+        <li class="toc-group">
+          <a href={`#${node.slug}`} class="toc-l1" data-heading-id={node.slug}>
+            <span class="toc-anchor" aria-hidden="true"></span>
+            <span class="toc-connector" aria-hidden="true"></span>
+            <span class="toc-title">{node.text}</span>
+          </a>
+          {node.children.length > 0 && (
+            <ul class="toc-children">
+              {node.children.map(child => (
+                <li>
+                  <a href={`#${child.slug}`} class="toc-l2" data-heading-id={child.slug}>
+                    <span class="toc-dash" aria-hidden="true"></span>
+                    <span class="toc-subtitle">{child.text}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+<script is:inline>
+  (function () {
+    const tocLinks = document.querySelectorAll('[data-heading-id]');
+
+    function setActive(id) {
+      tocLinks.forEach(function (link) {
+        link.classList.toggle('toc-active', link.getAttribute('data-heading-id') === id);
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-10% 0px -75% 0px', threshold: 0 }
+    );
+
+    tocLinks.forEach(function (link) {
+      const id = link.getAttribute('data-heading-id');
+      const heading = id ? document.getElementById(id) : null;
+      if (heading) observer.observe(heading);
+
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!heading) return;
+        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', '#' + id);
+      });
+    });
+  })();
+</script>
+
+<style>
+  .toc {
+    width: 220px;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .toc-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-tertiary);
+    margin-bottom: 12px;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-group {
+    margin-bottom: 10px;
+  }
+
+  .toc-l1 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .toc-l1:hover {
+    color: var(--color-text-primary);
+  }
+
+  .toc-anchor {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-secondary);
+    background-color: transparent;
+    flex-shrink: 0;
+  }
+
+  .toc-connector {
+    flex: 1;
+    height: 1px;
+    min-width: 8px;
+    background-color: var(--color-border-secondary);
+    transition: background-color 0.15s ease;
+  }
+
+  .toc-title {
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .toc-l1.toc-active,
+  .toc-l2.toc-active {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .toc-l1.toc-active .toc-anchor {
+    background-color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  .toc-l1.toc-active .toc-connector,
+  .toc-l1.toc-active .toc-dash {
+    background-color: var(--color-text-primary);
+  }
+
+  .toc-children {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+    padding-left: 14px;
+  }
+
+  .toc-children li {
+    margin-bottom: 4px;
+  }
+
+  .toc-l2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .toc-l2:hover {
+    color: var(--color-text-primary);
+  }
+
+  .toc-l2.toc-active {
+    color: var(--color-text-primary);
+  }
+
+  .toc-dash {
+    width: 8px;
+    height: 0.5px;
+    background-color: var(--color-border-secondary);
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .toc-l2.toc-active .toc-dash {
+    background-color: var(--color-text-primary);
+  }
+
+  .toc-subtitle {
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 1023px) {
+    .toc {
+      width: auto;
+    }
+  }
+</style>

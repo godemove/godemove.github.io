@@ -13,27 +13,33 @@ for (const p of allPosts) {
 const years = Array.from(postsByYear.keys()).sort((a, b) => b - a);
 
 const currentPath = Astro.url.pathname;
+
+function formatMonthDay(date: Date) {
+  const d = new Date(date);
+  return `${d.getMonth() + 1}月 ${d.getDate()}日`;
+}
 ---
 
-<div class="text-sm leading-relaxed">
-  <div class="font-semibold text-xs text-text-secondary uppercase tracking-wider mb-3">文章</div>
+<nav class="doc-tree">
   {years.map(year => (
-    <div class="mb-5">
-      <div class="text-xs text-text-secondary mb-1">{year}</div>
-      <ul class="list-none p-0 m-0">
+    <div class="year-group">
+      <div class="year-label">
+        <span>{year}</span>
+        <span class="year-line" aria-hidden="true"></span>
+      </div>
+      <ul class="post-list">
         {postsByYear.get(year)!.map(p => {
           const postUrl = `/blog/${p.id}`;
           const isCurrent = currentPath === postUrl || currentPath === `${postUrl}/`;
           return (
-            <li class="mb-1">
+            <li>
               <a
                 href={postUrl}
-                class:list={[
-                  "block truncate no-underline border-0 transition-colors",
-                  isCurrent ? "text-text" : "text-text-secondary hover:text-text"
-                ]}
+                class:list={["post-entry", isCurrent && "post-entry--current"]}
               >
-                {p.data.title}
+                <span class="post-dot" aria-hidden="true"></span>
+                <span class="post-title">{p.data.title}</span>
+                <span class="post-date">{formatMonthDay(p.data.pubDate)}</span>
               </a>
             </li>
           );
@@ -41,4 +47,113 @@ const currentPath = Astro.url.pathname;
       </ul>
     </div>
   ))}
-</div>
+</nav>
+
+<style>
+  .doc-tree {
+    width: 220px;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .year-group {
+    margin-bottom: 20px;
+  }
+
+  .year-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .year-line {
+    flex: 1;
+    height: 0.5px;
+    background-color: var(--color-border-secondary);
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 10px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+
+  .post-entry:hover {
+    color: var(--color-text-primary);
+  }
+
+  .post-entry:hover .post-dot {
+    background-color: var(--color-text-primary);
+  }
+
+  .post-entry--current {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .post-entry--current::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background-color: var(--color-text-primary);
+  }
+
+  .post-entry--current .post-dot {
+    background-color: var(--color-text-primary);
+  }
+
+  .post-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--color-border-secondary);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .post-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .post-date {
+    flex-shrink: 0;
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .post-entry:hover .post-date {
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 1023px) {
+    .doc-tree {
+      width: auto;
+    }
+  }
+</style>

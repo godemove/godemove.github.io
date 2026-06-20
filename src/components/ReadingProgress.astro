@@ -1,0 +1,66 @@
+---
+---
+
+<div class="reading-progress" aria-hidden="true">
+  <div class="reading-progress-track">
+    <div class="reading-progress-bar" id="reading-progress-bar" style="width: 0%;"></div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const bar = document.getElementById('reading-progress-bar');
+    if (!bar) return;
+
+    function updateProgress() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const pct = scrollHeight > 0 ? Math.min(100, Math.round((scrollTop / scrollHeight) * 100)) : 0;
+      bar.style.width = pct + '%';
+    }
+
+    updateProgress();
+    setInterval(updateProgress, 200);
+
+    let ticking = false;
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (!ticking) {
+          requestAnimationFrame(function () {
+            updateProgress();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
+  })();
+</script>
+
+<style>
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    height: 2px;
+    background-color: transparent;
+    pointer-events: none;
+  }
+
+  .reading-progress-track {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-border-tertiary);
+  }
+
+  .reading-progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-text-secondary);
+    transition: width 0.1s linear;
+  }
+</style>
