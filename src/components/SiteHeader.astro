@@ -1,0 +1,43 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const pathname = Astro.url.pathname;
+
+const navItems = [
+  { href: '/tags', label: '标签' },
+  { href: '/about', label: '关于' },
+];
+
+const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+---
+
+<header class="site-header sticky top-0 z-50 -mx-6 px-6 mb-12 border-b border-border-tertiary">
+  <nav class="flex justify-between items-center h-16">
+    <a href="/" class="font-medium text-base no-underline border-0 text-text-primary hover:opacity-70 transition-opacity">我的日志</a>
+    <div class="flex items-center gap-3 sm:gap-6">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+          class:list={[
+            'nav-link text-sm no-underline border-0 transition-colors',
+            isActive(item.href) ? 'is-active text-text-primary' : 'text-text-secondary hover:text-text-primary',
+          ]}
+        >{item.label}</a>
+      ))}
+      <ThemeToggle />
+    </div>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    background-color: color-mix(in srgb, var(--color-background-tertiary) 85%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .nav-link.is-active {
+    border-bottom: 1px solid var(--color-text-primary);
+  }
+</style>

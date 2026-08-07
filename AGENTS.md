@@ -28,6 +28,7 @@
 │   ├── content/blog/          # 文章（Markdown）
 │   ├── components/            # 可复用组件
 │   │   ├── PageGrid.astro     # 三栏布局容器
+│   │   ├── SiteHeader.astro   # 顶栏（sticky + 毛玻璃 + 当前页高亮）
 │   │   ├── DocTree.astro      # 左侧文章树
 │   │   ├── ThemeToggle.astro  # 主题切换按钮
 │   │   └── Comments.astro     # 评论组件（D1 + 原生 JS）

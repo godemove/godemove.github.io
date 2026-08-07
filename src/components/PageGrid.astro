@@ -229,9 +229,10 @@ const hasRight = Astro.slots.has('right');
       display: flex;
       flex-direction: column;
       position: sticky;
-      top: 0;
+      /* 顶栏高 64px（h-16），侧栏吸顶时停在其下方，底部保留原 96px 间距 */
+      top: 4rem;
       align-self: start;
-      height: calc(100vh - 96px);
+      height: calc(100vh - 10rem);
       overflow-y: auto;
       overflow-x: hidden;
       background-color: transparent;

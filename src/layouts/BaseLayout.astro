@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 
 interface Props {
   title: string;
@@ -16,6 +16,7 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="icon" type="image/x-icon" href="/logo.ico" />
     <script is:inline>
       (function() {
         const theme = (() => {
@@ -39,19 +40,8 @@ const { title, description = '一个极简主义的个人博客' } = Astro.props
   </head>
   <body>
     <slot name="progress" />
-    <div class="max-w-[1500px] mx-auto px-6 py-10 min-h-screen flex flex-col">
-      <header class="mb-12">
-        <nav class="flex justify-between items-center">
-          <a href="/" class="font-medium text-base no-underline border-0 text-text-secondary hover:text-text transition-colors">我的日志</a>
-          <div class="flex items-center gap-6">
-            <div class="flex items-center gap-6">
-              <a href="/tags" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">标签</a>
-              <a href="/about" class="text-sm text-text-secondary no-underline border-0 hover:text-text transition-colors">关于</a>
-            </div>
-            <ThemeToggle />
-          </div>
-        </nav>
-      </header>
+    <div class="max-w-[1500px] mx-auto px-6 pb-10 min-h-screen flex flex-col">
+      <SiteHeader />
       <main class="flex-1">
         <slot />
       </main>
