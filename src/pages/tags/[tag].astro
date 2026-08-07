@@ -6,7 +6,7 @@ import { getCollection } from 'astro:content';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const posts = await getCollection('blog', ({ data }) => !data.draft && (import.meta.env.DEV || !data.testOnly));
   const tags = Array.from(new Set(posts.flatMap(post => post.data.tags || [])));
 
   return tags.map(tag => ({
@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { tag } = Astro.props;
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const allPosts = await getCollection('blog', ({ data }) => !data.draft && (import.meta.env.DEV || !data.testOnly));
 const posts = allPosts
   .filter(post => post.data.tags?.includes(tag))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());

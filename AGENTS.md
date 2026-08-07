@@ -97,13 +97,15 @@ pubDate: 2026-04-02
 description: "可选的简短描述"
 tags: ["标签一", "标签二"]
 draft: false
+testOnly: false
 ---
 ```
 
 - `title`：**必填**
 - `pubDate`：**必填**，`YYYY-MM-DD` 格式
 - `tags`：字符串数组，**可选**
-- `draft`：布尔值，默认 `false`；`true` 时不会在首页和标签页显示
+- `draft`：布尔值，默认 `false`；`true` 时不会在首页和标签页显示（路由仍生成，可通过 URL 访问）
+- `testOnly`：布尔值，默认 `false`；`true` 时仅在 `bun run dev` 开发环境可见，生产构建**完全不生成路由**（404），并从所有列表、RSS、标签页中移除
 
 ---
 
