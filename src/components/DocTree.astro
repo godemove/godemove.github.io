@@ -35,6 +35,7 @@ function formatMonthDay(date: Date) {
             <li>
               <a
                 href={postUrl}
+                title={p.data.title}
                 class:list={["post-entry", isCurrent && "post-entry--current"]}
               >
                 <span class="post-dot" aria-hidden="true"></span>
