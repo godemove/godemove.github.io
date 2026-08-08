@@ -49,8 +49,12 @@
 │   │       ├── index.astro       # 标签列表页
 │   │       └── [tag].astro       # 标签详情页
 │   ├── styles/global.css      # 全局样式 + CSS 变量
+│   ├── generated/             # 构建期生成（gitignored，如 font-subset.json）
 │   └── content.config.ts      # 内容集合 schema
-├── public/fonts/              # LXGW Bright Code 字体文件
+├── scripts/
+│   ├── subset-font.mjs        # 构建期字体子集化脚本
+│   └── fonts/                 # 完整字体源（LXGWBrightCode-Regular.woff2）
+├── public/fonts/              # 字体文件（含构建期生成的子集）
 ├── .github/workflows/deploy.yml  # CI/CD（Cloudflare Workers）
 ├── wrangler.toml              # Cloudflare Workers / D1 / KV 绑定配置
 ├── schema.sql                 # D1 初始化 SQL（comments + comment_rate_limits）
@@ -115,11 +119,14 @@ testOnly: false
 # 安装依赖
 bun install
 
-# 本地开发（静态页面预览）
+# 本地开发（自动先执行字体子集化）
 bun run dev
 
-# 构建（输出到 dist/）
+# 构建（自动先执行字体子集化，输出到 dist/）
 bun run build
+
+# 单独执行字体子集化
+bun run subset:font
 
 # 预览构建结果（在本地 workerd 运行时中运行，含 D1/KV 绑定）
 bun run preview
@@ -144,10 +151,15 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 - `ubuntu-latest` 默认只带 Node 20
 
 ### 6.3 字体文件
-字体通过 `public/fonts/` 本地托管，不要改路径。构建后会自动复制到 `dist/fonts/`。
-- 字体按 unicode-range 分包（每个字重 ~120 个 woff2），浏览器按需下载
-- **仅链接了 `lxgwbrightcode-400.css`**（`<head>` 中以 preload 异步加载，`font-display: swap`）；500/600 字重和斜体由浏览器从 400 合成。`public/fonts/` 里的 300 与 italic 文件当前未被引用，如不再需要可整目录删除以减小部署体积
+采用**构建期子集化**：全站只部署一个按内容裁剪的单文件字体，不再使用 unicode-range 分包方案。
+- **完整字体源**：`scripts/fonts/LXGWBrightCode-Regular.woff2`（v2.711，已提交仓库）。升级字体时：从 [lxgw/LxgwBright-Code Releases](https://github.com/lxgw/LxgwBright-Code/releases) 下载对应版本 7z → 解压出 `LXGWBrightCode-Regular.ttf` → 用 `wawoff2` 压缩覆盖该文件
+- **子集化脚本**：`scripts/subset-font.mjs`（`bun run dev` / `bun run build` 会自动先执行，也可单独 `bun run subset:font`）。字符集 = `src/` 下所有文本文件 + 常备字符（ASCII、中文标点、全角英数）
+- **产物**：`public/fonts/lxgw-bright-code-400.subset.<内容哈希>.woff2`（哈希命名，可安全长缓存；旧哈希文件自动清理），字体 URL 写入 `src/generated/font-subset.json` 供 `BaseLayout.astro` 引用（`<head>` 内 preload + 内联 `@font-face`）。两者均已 gitignore
+- **新文章的新字符**在下次构建时自动纳入；`dev` 期间新增字符需重启 dev 才会进入子集
+- 评论等动态内容中的罕见字不在子集内时，浏览器自动回退系统字体，不会破版；本地安装过 LXGW Bright Code 的访客优先走 `local()` 完整字体
+- 500/600 字重与斜体由浏览器从 400 合成
 - **缓存**：`public/_headers` 为 `/fonts/*` 设置了 `Cache-Control: public, max-age=31536000, immutable`，Cloudflare adapter 构建时会自动追加 `/_astro/*` 规则。去掉该规则会导致字体每次访问都回源重新验证，切勿删除
+- `public/fonts/` 下的旧分包文件（`lxgwbrightcode-*` 目录与 CSS）已无任何引用，保留与否不影响运行；删除可显著减小部署体积
 
 ### 6.4 RSS 站点地址
 `astro.config.mjs` 中应配置真实的站点域名。

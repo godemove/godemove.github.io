@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
+import fontSubset from "../generated/font-subset.json";
 
 interface Props {
     title: string;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 const { title, description = "一个极简主义的个人博客" } = Astro.props;
+// 构建期生成的单文件字体子集（scripts/subset-font.mjs）
+const fontFaceCss = `@font-face{font-family:"LXGW Bright Code";src:local("LXGW Bright Code"),url("${fontSubset.url}") format("woff2");font-style:normal;font-weight:400;font-display:swap;}`;
 ---
 
 <!doctype html>
@@ -39,13 +42,12 @@ const { title, description = "一个极简主义的个人博客" } = Astro.props
         </script>
         <link
             rel="preload"
-            as="style"
-            href="/fonts/lxgwbrightcode-400.css"
-            onload="this.onload=null;this.rel='stylesheet'"
+            href={fontSubset.url}
+            as="font"
+            type="font/woff2"
+            crossorigin
         />
-        <noscript>
-            <link rel="stylesheet" href="/fonts/lxgwbrightcode-400.css" />
-        </noscript>
+        <Fragment set:html={`<style>${fontFaceCss}</style>`} />
         <link
             rel="alternate"
             type="application/rss+xml"
