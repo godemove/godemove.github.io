@@ -27,7 +27,8 @@ pnpm-debug.log*
 .wrangler/
 
 # 构建期生成的字体子集（由 scripts/subset-font.mjs 产出）
-/public/fonts/lxgw-bright-code-400.subset.*.woff2
+/public/fonts/*
+!/public/fonts/.gitkeep
 /src/generated/
 
 # AI Agent Config dir

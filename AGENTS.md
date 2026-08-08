@@ -12,7 +12,7 @@
 | 框架 | **Astro 6.x**（静态 + SSR API，输出 `dist/`） |
 | 包管理器 | **Bun 1.3.x**（`bun install`、`bun run build`） |
 | 样式 | **Tailwind CSS 4.x**（Vite 插件方式接入） |
-| 字体 | **LXGW Bright Code**（本地托管于 `public/fonts/`） |
+| 字体 | **LXGW Bright Code**（构建期子集化，产物在 `public/fonts/`） |
 | 内容 | Markdown + Astro Content Collections（`src/content/blog/`） |
 | 部署 | **Cloudflare Workers** via GitHub Actions（`.github/workflows/deploy.yml`） |
 | 数据库 | **Cloudflare D1**（`cmsdb`）+ Drizzle ORM |
@@ -54,7 +54,7 @@
 ├── scripts/
 │   ├── subset-font.mjs        # 构建期字体子集化脚本
 │   └── fonts/                 # 完整字体源（LXGWBrightCode-Regular.woff2）
-├── public/fonts/              # 字体文件（含构建期生成的子集）
+├── public/fonts/              # 构建期生成的字体子集（gitignore，勿手改）
 ├── .github/workflows/deploy.yml  # CI/CD（Cloudflare Workers）
 ├── wrangler.toml              # Cloudflare Workers / D1 / KV 绑定配置
 ├── schema.sql                 # D1 初始化 SQL（comments + comment_rate_limits）
@@ -159,7 +159,7 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 - 评论等动态内容中的罕见字不在子集内时，浏览器自动回退系统字体，不会破版；本地安装过 LXGW Bright Code 的访客优先走 `local()` 完整字体
 - 500/600 字重与斜体由浏览器从 400 合成
 - **缓存**：`public/_headers` 为 `/fonts/*` 设置了 `Cache-Control: public, max-age=31536000, immutable`，Cloudflare adapter 构建时会自动追加 `/_astro/*` 规则。去掉该规则会导致字体每次访问都回源重新验证，切勿删除
-- `public/fonts/` 下的旧分包文件（`lxgwbrightcode-*` 目录与 CSS）已无任何引用，保留与否不影响运行；删除可显著减小部署体积
+- `public/fonts/` 仅放构建产物，不入库；完整字体源只保留在 `scripts/fonts/`
 
 ### 6.4 RSS 站点地址
 `astro.config.mjs` 中应配置真实的站点域名。

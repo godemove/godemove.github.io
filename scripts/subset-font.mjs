@@ -63,6 +63,7 @@ if (sizeKB < 50 || sizeKB > 4096) {
 
 const hash = createHash("sha256").update(subset).digest("hex").slice(0, 8);
 const filename = `${OUT_BASE}.${hash}.woff2`;
+mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, filename), subset);
 
 // 清理旧哈希的子集文件，避免部署体积随时间膨胀
