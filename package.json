@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260702.1",
-    "@joshuasu/lxgwbright-code-web": "^2.711.0",
     "@tailwindcss/vite": "^4.3.3",
     "subset-font": "^2.5.0",
     "tailwindcss": "^4.3.3",
