@@ -145,6 +145,9 @@ GitHub Actions 中**必须同时安装 Node 22 和 Bun**：
 
 ### 6.3 字体文件
 字体通过 `public/fonts/` 本地托管，不要改路径。构建后会自动复制到 `dist/fonts/`。
+- 字体按 unicode-range 分包（每个字重 ~120 个 woff2），浏览器按需下载
+- **仅链接了 `lxgwbrightcode-400.css`**（`<head>` 中以 preload 异步加载，`font-display: swap`）；500/600 字重和斜体由浏览器从 400 合成。`public/fonts/` 里的 300 与 italic 文件当前未被引用，如不再需要可整目录删除以减小部署体积
+- **缓存**：`public/_headers` 为 `/fonts/*` 设置了 `Cache-Control: public, max-age=31536000, immutable`，Cloudflare adapter 构建时会自动追加 `/_astro/*` 规则。去掉该规则会导致字体每次访问都回源重新验证，切勿删除
 
 ### 6.4 RSS 站点地址
 `astro.config.mjs` 中应配置真实的站点域名。

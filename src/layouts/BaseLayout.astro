@@ -16,7 +16,7 @@ const { title, description = "一个极简主义的个人博客" } = Astro.props
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content={description} />
-        <link rel="icon" type="image/x-icon" href="/logo.ico" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <script is:inline>
             (function () {
                 const theme = (() => {
@@ -37,10 +37,15 @@ const { title, description = "一个极简主义的个人博客" } = Astro.props
                 document.documentElement.setAttribute("data-theme", theme);
             })();
         </script>
-        <link rel="stylesheet" href="/fonts/lxgwbrightcode-300.css" />
-        <link rel="stylesheet" href="/fonts/lxgwbrightcode-400.css" />
-        <link rel="stylesheet" href="/fonts/lxgwbrightcode-300-italic.css" />
-        <link rel="stylesheet" href="/fonts/lxgwbrightcode-400-italic.css" />
+        <link
+            rel="preload"
+            as="style"
+            href="/fonts/lxgwbrightcode-400.css"
+            onload="this.onload=null;this.rel='stylesheet'"
+        />
+        <noscript>
+            <link rel="stylesheet" href="/fonts/lxgwbrightcode-400.css" />
+        </noscript>
         <link
             rel="alternate"
             type="application/rss+xml"
